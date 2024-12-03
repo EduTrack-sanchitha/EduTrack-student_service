@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Service</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+</head>
+
+<body class="bg-light">
+
+    <!-- Naigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="btn btn-primary" href="http://127.0.0.1:5001/">Student</a>&nbsp;&nbsp;
+                </li>
+                <li class="nav-item active">
+                    <a class="btn btn-primary" href="http://127.0.0.1:5002/">Shedule</a>&nbsp;&nbsp;
+                </li>
+                <li class="nav-item">
+                    <a class="btn btn-primary" href="http://127.0.0.1:5003/">Message</a>&nbsp;&nbsp;
+                </li>
+        </div>
+    </nav>
+
+
+    <div class="container py-4">
+        <h1 class="text-center mb-4">Student Service</h1>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2 class="h5 mb-0">Add Student</h2>
+            </div>
+            <div class="card-body">
+                <form id="addForm" class="row g-3">
+                    <div class="col-md-4">
+                        <input type="text" id="name" class="form-control" placeholder="Name" required>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="email" id="email" class="form-control" placeholder="Email" required>
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" id="course" class="form-control" placeholder="Course" required>
+                    </div>
+                    <div class="col-md-12 text-center">
+                        <button type="submit" class="btn btn-primary">Add Student</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2 class="h5 mb-0">Update Student</h2>
+            </div>
+            <div class="card-body">
+                <form id="updateForm" class="row g-3">
+                    <div class="col-md-3">
+                        <input type="number" id="studentId" class="form-control" placeholder="Student ID" required>
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" id="updateName" class="form-control" placeholder="New Name">
+                    </div>
+                    <div class="col-md-3">
+                        <input type="email" id="updateEmail" class="form-control" placeholder="New Email">
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" id="updateCourse" class="form-control" placeholder="New Course">
+                    </div>
+                    <div class="col-md-12 text-center">
+                        <button type="submit" class="btn btn-warning">Update Student</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="h5 mb-0">Student List</h2>
+            </div>
+            <div class="card-body">
+                <table id="studentsTable" class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Course</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Student rows will go here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fetch and display students
+        function loadStudents() {
+            fetch('/students')
+                .then(response => response.json())
+                .then(students => {
+                    const tableBody = document.querySelector('#studentsTable tbody');
+                    tableBody.innerHTML = ''; // Clear existing rows
+                    students.forEach(student => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${student.id}</td>
+                            <td>${student.name}</td>
+                            <td>${student.email}</td>
+                            <td>${student.course}</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm" onclick="deleteStudent(${student.id})">Delete</button>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                });
+        }
+
+        // Add student
+        document.querySelector('#addForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const data = {
+                name: document.querySelector('#name').value,
+                email: document.querySelector('#email').value,
+                course: document.querySelector('#course').value,
+            };
+            fetch('/students', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    loadStudents();
+                });
+        });
+
+        // Update student
+        document.querySelector('#updateForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const studentId = document.querySelector('#studentId').value;
+            const data = {
+                name: document.querySelector('#updateName').value,
+                email: document.querySelector('#updateEmail').value,
+                course: document.querySelector('#updateCourse').value,
+            };
+            fetch(`/students/${studentId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    loadStudents();
+                });
+        });
+
+        // Delete student
+        function deleteStudent(studentId) {
+            fetch(`/students/${studentId}`, {
+                method: 'DELETE'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    loadStudents();
+                });
+        }
+
+        // Initial load of students
+        loadStudents();
+    </script>
+</body>
+
+</html>
