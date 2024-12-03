@@ -5,8 +5,8 @@ app = Flask(__name__)
 
 # Database configuration
 db_config = {
-    "host": "localhost",
-    "port": "8889",
+    "host": "mysql",
+    "port": "3306",
     "user": "root",
     "password": "root",
     "database": "edutrack"
